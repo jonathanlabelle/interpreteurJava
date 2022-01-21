@@ -1,0 +1,6 @@
+classeDebut( A )
+
+methodeDebut( int, a )
+methodeFin
+
+classeFin

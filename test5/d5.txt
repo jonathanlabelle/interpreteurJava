@@ -1,0 +1,5 @@
+classeDebut( A )
+
+attribut( int, a )
+
+classeFin

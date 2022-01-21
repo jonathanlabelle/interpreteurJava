@@ -1,0 +1,7 @@
+classeDebut( A )
+
+methodeDebut( int, m )
+parametre( String, s )
+methodeFin
+
+classeFin

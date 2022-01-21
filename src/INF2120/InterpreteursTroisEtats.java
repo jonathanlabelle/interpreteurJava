@@ -1,0 +1,16 @@
+/**
+ *
+ * @author Jonathan Labelle
+ * @codePermanent LABJ28039006
+ * @Date 07/04/2021
+ */
+
+package INF2120;
+
+public class InterpreteursTroisEtats {
+
+    public boolean premierAttribut = true;
+    public boolean premiereMethode = true;
+    public boolean premiereClasse = true;
+
+}

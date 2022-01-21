@@ -1,0 +1,273 @@
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Stack;
+
+public class InterpreteurTrois implements ContextInterpretation {
+
+    private EtatsInterpreteurTrois etat;
+    private int nbrClasse = 0;
+    private Stack<EtatsInterpreteurTrois> pileEtat = new Stack<>();
+    private boolean estAbstrait = false;
+    private boolean estPremierParametre = false;
+    private File file = new File("C:\\Users\\mattx\\IdeaProjects\\INF2120_TP2\\inf2120_tp2\\uml.tex");
+    private FileWriter fileWriter;
+    private BufferedWriter bufferedWriter;
+    private DescriptionLatex14 descriptionLatex14;
+    private String classeIdNom;
+    private String attributIdNom;
+    private String attributIdType;
+    private String methodeIdNom;
+    private String methodeIdType;
+    private String parametreIdNom;
+    private String parametreIdType;
+    private Commande mode;
+
+    @Override
+    public void genAbstrait(MotAbstrait motAbstraite) {
+        estAbstrait = true;
+    }
+
+    @Override
+    public void genDebutClasse(MotDebutClasse motDebutClasse) {
+        classeIdNom = classeIdNom.substring(0,1);
+        if (nbrClasse == 0) {
+            startWriter(DescriptionLatex14.PAGE_DEBUT);
+            System.out.println("DID THIS PAGE DEBUT");
+        } else {
+            if (pileEtat.peek().premiereClasse) {
+                startWriter(DescriptionLatex14.CLASSE_FIN);
+                startWriter(DescriptionLatex14.CLASSE_DEBUT);
+                pileEtat.peek().premiereClasse = false;
+            }
+            startWriter(DescriptionLatex14.CLASSE_INTERNE_PREFIX);
+        }
+        pileEtat.push(new EtatsInterpreteurTrois());
+        startWriter(DescriptionLatex14.CLASSE_DEBUT);
+        if (estAbstrait) {
+            startWriter(DescriptionLatex14.ABSTRAIT_DEBUT);
+        }
+        startWriter(classeIdNom);
+        if (estAbstrait) {
+            startWriter(DescriptionLatex14.ABSTRAIT_FIN);
+            estAbstrait = false;
+        }
+        nbrClasse ++;
+    }
+
+    @Override
+    public void genClasseFin(MotFinClasse motFinClasse) {
+        nbrClasse --;
+        if (pileEtat.peek().premiereClasse) {
+            startWriter(DescriptionLatex14.CLASSE_FIN);
+        } else {
+            startWriter(DescriptionLatex14.LISTE_CLASSE_FIN);
+        }
+        if (nbrClasse == 0) {
+            startWriter(DescriptionLatex14.PAGE_FIN);
+        } else {
+            startWriter(DescriptionLatex14.CLASSE_INTERNE_SUFFIX);
+        }
+        pileEtat.pop();
+    }
+
+    @Override
+    public void genAttribut(MotAttribut motAttribut) {
+        attributIdNom = attributIdNom.substring(0, attributIdNom.length()-1);
+        attributIdType = attributIdType.substring(0, attributIdType.length()-1);
+        if (pileEtat.peek().premierAttribut) {
+            startWriter(DescriptionLatex14.LISTE_ATTRIBUT_DEBUT);
+            pileEtat.peek().premierAttribut = false;
+        } else {
+            startWriter(DescriptionLatex14.LISTE_ATTRIBUT_SEP);
+        }
+        startWriter(attributIdNom + " : " + attributIdType);
+    }
+
+    @Override
+    public void genDebutMethode(MotDebutMethode motDebutMethode) {
+        methodeIdNom = methodeIdNom.substring(0, methodeIdNom.length()-1);
+        methodeIdType = methodeIdType.substring(0,methodeIdType.length() -1);
+        if (pileEtat.peek().premiereMethode) {
+            startWriter(DescriptionLatex14.LISTE_METHODE_DEBUT);
+            pileEtat.peek().premiereMethode = false;
+        } else {
+            startWriter(DescriptionLatex14.LISTE_METHODE_SEP);
+        }
+        if (estAbstrait) {
+            startWriter(DescriptionLatex14.ABSTRAIT_DEBUT);
+        }
+        if (!methodeIdType.equals("void")) {
+            startWriter(methodeIdType);
+        }
+        startWriter(methodeIdNom);
+        startWriter(DescriptionLatex14.PARAMETRE_DEBUT);
+        estPremierParametre = true;
+
+    }
+
+    @Override
+    public void genParametre(MotParametre motParametre) {
+        parametreIdNom = parametreIdNom.substring(0, parametreIdNom.length()-1);
+        parametreIdType = parametreIdType.substring(0, parametreIdType.length()-1);
+        if (estPremierParametre) {
+            estPremierParametre = false;
+        } else {
+            startWriter(DescriptionLatex14.PARAMETRE_SEP);
+        }
+        startWriter(parametreIdType);
+    }
+
+    @Override
+    public void genFinMethode(MotFinMethode motFinMethode) {
+        startWriter(DescriptionLatex14.PARAMETRE_SEP);
+        if (estAbstrait) {
+            startWriter(DescriptionLatex14.ABSTRAIT_FIN);
+            estAbstrait = false;
+        }
+    }
+
+    @Override
+    public void interpreteProgramme(Programme programme) {
+        programme.listCommandes();
+        //nextIdNom = programme.getIntDeuxClasseIdNom();
+
+
+        for (int i = 0; i < programme.getListCommandes().size(); i++) {
+
+            programme.scanCommande(programme.getListCommandes().get(i));
+
+            //System.out.println(i + " th senteece is: " + programme.getListCommandes().get(i));
+            //System.out.println("inside parenthesis is: " + extractInsideParenthesis(programme.getListCommandes().get(i)));
+            //System.out.println(programme.getCommandeLigne());
+
+
+            //System.out.println(programme.getListCommandes().get(0));
+            if (programme.getCommandeLigne() instanceof MotAbstrait) {
+                genAbstrait((MotAbstrait)programme.getCommandeLigne());
+                System.out.println("Done MotAbstrait " + i);
+                //System.out.println("ce ligne est abtsrait");
+                //System.out.println(programme.getCommandeLigne());
+            }
+
+
+            if (programme.getCommandeLigne() instanceof MotDebutClasse) {
+                classeIdNom = extractInsideParenthesisClasseDebut(programme.getListCommandes().get(i));
+                System.out.println(classeIdNom);
+                System.out.println(classeIdNom.substring(0,1).equals("C"));
+                genDebutClasse((MotDebutClasse) programme.getCommandeLigne());
+                System.out.println("Done MotDebutClass " + i);
+
+            }
+            if (programme.getCommandeLigne() instanceof MotDebutMethode) {
+                methodeIdNom = exctractIdNom(extractInsideParenthesisMethode(programme.getListCommandes().get(i)));
+                methodeIdType = exctractIdType(extractInsideParenthesisMethode(programme.getListCommandes().get(i)));
+                System.out.println("tried motDebut methpd");
+                genDebutMethode((MotDebutMethode) programme.getCommandeLigne());
+                System.out.println("Done MotDebutMethod " + i);
+                //System.out.println("yas");
+            }
+            if (programme.getCommandeLigne() instanceof MotAttribut) {
+                attributIdNom = exctractIdNom(extractInsideParenthesisAttribut(programme.getListCommandes().get(i)));
+                attributIdType = exctractIdType(extractInsideParenthesisAttribut(programme.getListCommandes().get(i)));
+
+                genAttribut((MotAttribut) programme.getCommandeLigne());
+                System.out.println(attributIdNom);
+                System.out.println(attributIdType);
+                //System.out.println("ce ligne est attribut");
+            }
+            if (programme.getCommandeLigne() instanceof MotParametre) {
+                parametreIdNom = exctractIdNom(extractInsideParenthesisParametre(programme.getListCommandes().get(i)));
+                parametreIdType = exctractIdType(extractInsideParenthesisParametre(programme.getListCommandes().get(i)));
+                genParametre((MotParametre) programme.getCommandeLigne());
+                System.out.println("Done motParametre " + i);
+            }
+            if (programme.getCommandeLigne() instanceof MotFinMethode) {
+                System.out.println("try mot fine methode");
+                genFinMethode((MotFinMethode) programme.getCommandeLigne());
+                System.out.println("Done MotFinMethode " + i);
+            }
+            if (programme.getCommandeLigne() instanceof MotFinClasse) {
+                genClasseFin((MotFinClasse) programme.getCommandeLigne());
+                System.out.println("Done MotFinClasse " + i);
+
+            }
+            System.out.println("\n" + getMode() + "thisMode " + i);
+            System.out.println("-------------------------------------");
+            System.out.println("System has reached the end of a loop " + i + "\n" );
+        }
+        //finLecture();
+
+    }
+
+    public void startWriter (String write) {
+        try {
+            fileWriter = new FileWriter(file);
+            bufferedWriter = new BufferedWriter(fileWriter);
+            bufferedWriter.write(write);
+            bufferedWriter.close();
+            fileWriter.close();
+        } catch (IOException ioe) {
+
+        }
+    }
+    public String extractInsideParenthesisClasseDebut(String parenthesis) {
+        String insideParenthesis = null;
+        try {
+            insideParenthesis = parenthesis.substring(11).replace("(", "").replace(")", "").replace(" ", "");
+        }catch (StringIndexOutOfBoundsException se){
+
+        }
+        return insideParenthesis;
+    }
+    public String extractInsideParenthesisAttribut(String parenthesis) {
+        String insideParenthesis = null;
+        try {
+            insideParenthesis = parenthesis.substring(9).replace("(", "").replace(")", "").replace(" ", "");
+        } catch (StringIndexOutOfBoundsException se) {
+
+        }
+        return insideParenthesis;
+    }
+    public String extractInsideParenthesisMethode(String parenthesis) {
+        String insideParenthesis = null;
+        try {
+            insideParenthesis = parenthesis.substring(12).replace("(", "").replace(")", "").replace(" ", "");
+        } catch (StringIndexOutOfBoundsException soe) {
+
+        }
+        return insideParenthesis;
+    }
+    public String extractInsideParenthesisParametre (String parenthesis) {
+        String insidePrenthesis = null;
+        try {
+            insidePrenthesis = parenthesis.substring(9).replace("(", "").replace(")", "").replace(" ", "");
+        } catch (StringIndexOutOfBoundsException soe) {
+
+        }
+        return insidePrenthesis;
+    }
+    public String exctractIdType (String insideParenthesis) {
+        String idType = "";
+        try {
+            idType = insideParenthesis.split(",")[0].replace(" ", "");
+        }catch (StringIndexOutOfBoundsException se) {
+
+        }
+        return idType;
+    }
+    public String exctractIdNom(String insideParenthesis) {
+        String idNom = "";
+        try {
+            idNom = insideParenthesis.split(",")[1].replace(" ", "");
+        } catch (StringIndexOutOfBoundsException se) {
+
+        }
+        return idNom;
+    }
+    private Commande getMode() {
+        return mode;
+    }
+}

@@ -1,0 +1,13 @@
+classeDebut( A )
+
+classeDebut( Aa )
+
+classeDebut( Aaa )
+classeFin
+
+classeFin
+
+classeDebut( Ab )
+classeFin
+
+classeFin

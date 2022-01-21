@@ -1,0 +1,9 @@
+classeDebut( A )
+classeDebut( B )
+
+methodeDebut( 1int, m )
+parametre( 1String, 3s )
+classeDebut( B )
+methodeFin
+
+classeFin

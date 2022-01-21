@@ -1,0 +1,3 @@
+Entrez le nom du fichier de description : d1.txt
+Erreur : Une methode ne peut pas etre declare ici.  
+(aucun fichier genere.)

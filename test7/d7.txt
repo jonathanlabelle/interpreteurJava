@@ -1,0 +1,7 @@
+classeDebut( A )
+
+abstrait
+methodeDebut( void, a )
+methodeFin
+
+classeFin

@@ -1,0 +1,3 @@
+Entrez le nom du fichier de description : d2.txt
+Erreur : Un attribut ne peut pas etre declare ici.
+(aucun fichier genere.)
